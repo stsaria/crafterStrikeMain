@@ -1,0 +1,4 @@
+name: crafterStrikeMain
+version: '1.0.0'
+main: si.f5.stsaria.crafterStrikeMain.CrafterStrikeMain
+api-version: '1.21'
