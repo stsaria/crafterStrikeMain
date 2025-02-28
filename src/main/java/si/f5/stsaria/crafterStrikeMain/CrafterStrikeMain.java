@@ -6,12 +6,11 @@ public final class CrafterStrikeMain extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
-
+        new Game(this);
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+
     }
 }
