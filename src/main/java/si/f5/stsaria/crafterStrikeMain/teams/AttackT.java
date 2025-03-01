@@ -2,9 +2,6 @@ package si.f5.stsaria.crafterStrikeMain.teams;
 
 import org.bukkit.ChatColor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AttackT extends BTeam {
     @Override
     String NAME() {

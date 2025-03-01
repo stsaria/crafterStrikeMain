@@ -2,20 +2,20 @@ package si.f5.stsaria.crafterStrikeMain.items;
 
 import org.bukkit.Material;
 
-public class SandA extends BBuyItem {
+public class IronABI extends BuyGameItem {
 
     @Override
     Material MATERIAL() {
-        return Material.ARROW;
+        return Material.TIPPED_ARROW;
     }
 
     @Override
     String NAME() {
-        return "サンド";
+        return "アイアン";
     }
 
     @Override
     int PRICE() {
-        return 500;
+        return 1900;
     }
 }
