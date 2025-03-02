@@ -7,19 +7,23 @@ import org.bukkit.boss.BarStyle;
 
 public class Timer {
     private final BossBar bossBar;
-    private final int second;
-    private int restSecond;
+    private final int tick;
+    private int restTick;
+    private int previousSec;
+    private int currentlySec;
     public Timer(int second) {
-        this.second = second;
-        this.restSecond = second;
+        this.tick = second*20;
+        this.restTick = second*20;
         this.bossBar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
         Bukkit.getOnlinePlayers().forEach(bossBar::addPlayer);
     }
     public boolean countDown(){
-        if (restSecond<1) return false;
-        this.restSecond--;
-        this.bossBar.setProgress((double) (second - restSecond) /restSecond);
-        this.bossBar.setTitle("残り時間: "+second/60+"分"+second%60+"秒");
+        this.previousSec = this.currentlySec;
+        if (restTick<1) return false;
+        this.restTick--;
+        this.bossBar.setProgress((double) (tick - restTick) /restTick);
+        this.bossBar.setTitle("残り時間: "+restTick/1200+"分"+restTick%1200+"秒");
+        this.currentlySec = this.restTick/20;
         return true;
     }
     public void removeAll() {

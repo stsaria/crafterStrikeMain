@@ -2,7 +2,7 @@ package si.f5.stsaria.crafterStrikeMain.items;
 
 import org.bukkit.Material;
 
-public class FillerI extends GameItem {
+public class FillerI extends BItem {
 
     @Override
     Material MATERIAL() {

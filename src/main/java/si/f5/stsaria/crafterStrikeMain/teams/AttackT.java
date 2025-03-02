@@ -14,7 +14,7 @@ public class AttackT extends BTeam {
     }
 
     @Override
-    ChatColor COLOR() {
+    public ChatColor COLOR() {
         return ChatColor.RED;
     }
 

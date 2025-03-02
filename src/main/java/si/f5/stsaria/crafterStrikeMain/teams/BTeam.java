@@ -2,6 +2,7 @@ package si.f5.stsaria.crafterStrikeMain.teams;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
@@ -13,7 +14,7 @@ public abstract class BTeam {
     private int score = 0;
     abstract String NAME();
     abstract String DISPLAY();
-    abstract ChatColor COLOR();
+    public abstract ChatColor COLOR();
     abstract String MESSAGE_PLANT_BOMB();
     abstract String MESSAGE_BOMBED();
 
@@ -31,12 +32,14 @@ public abstract class BTeam {
     public final void upScore(){
         this.score++;
     }
+    public final boolean contains(Player player){
+        return this.team.getEntries().contains(player.getName());
+    }
     public final int score(){
         return this.score;
     }
     public final void allAdd(ArrayList<Player> players){
         players.forEach(n -> this.team.addEntry(n.getName()));
-        this.team.getEntries().forEach(this.team::removeEntry);
     }
     public final void allRemove(){
         this.team.getEntries().forEach(this.team::removeEntry);
@@ -44,6 +47,11 @@ public abstract class BTeam {
     public final ArrayList<Player> list(){
         ArrayList<Player> players = new ArrayList<>();
         this.team.getEntries().forEach(n -> players.add(Bukkit.getPlayer(n)));
+        return players;
+    }
+    public final ArrayList<Player> notSpectatorList(){
+        ArrayList<Player> players = new ArrayList<>();
+        this.list().forEach(p -> {if (p.getGameMode() != GameMode.SPECTATOR) players.add(p);});
         return players;
     }
 }

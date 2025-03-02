@@ -6,12 +6,12 @@ import org.bukkit.entity.Player;
 
 import java.util.Objects;
 
-public class AdvPlayer {
+public class GamePlayer {
     private final OfflinePlayer player;
     private int kill = 0;
     private int death = 0;
     private int money = 0;
-    public AdvPlayer(Player player){
+    public GamePlayer(Player player){
         this.player = player;
     }
     public Player getPlayer(){
