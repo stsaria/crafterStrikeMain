@@ -2,6 +2,7 @@ package si.f5.stsaria.crafterStrikeMain;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,6 +10,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import si.f5.stsaria.crafterStrikeMain.items.BombI;
 import si.f5.stsaria.crafterStrikeMain.items.BuyMenuOpenerI;
 import si.f5.stsaria.crafterStrikeMain.items.FillerI;
 import si.f5.stsaria.crafterStrikeMain.teams.AttackT;
@@ -16,6 +18,7 @@ import si.f5.stsaria.crafterStrikeMain.teams.BTeam;
 import si.f5.stsaria.crafterStrikeMain.teams.DefenceT;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
@@ -33,7 +36,8 @@ public class Game extends BukkitRunnable implements Listener {
 
     private BTeam winTeam;
 
-    public static GamePlayer bombPlantPlayerPlan;
+    public static GamePlayer bombPlantPlayer = null;
+    public static Location bombPlantLocation = null;
     public static String bombPlantCode = null;
     public static String bombDefuseCode = null;
 
@@ -158,7 +162,8 @@ public class Game extends BukkitRunnable implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e){
         if (e.getMessage().equals(bombPlantCode)){
-
+            Objects.requireNonNull(Bukkit.getWorld("world"))
+                    .getBlockAt(bombPlantLocation).setType(new BombI().MATERIAL());
         }
     }
 }

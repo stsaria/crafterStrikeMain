@@ -10,7 +10,7 @@ import java.util.Arrays;
 public abstract class BItem {
     protected final ItemStack itemStack;
 
-    abstract Material MATERIAL();
+    public abstract Material MATERIAL();
     abstract String NAME();
     abstract String ABOUT();
 

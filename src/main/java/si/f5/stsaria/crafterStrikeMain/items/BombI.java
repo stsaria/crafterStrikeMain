@@ -12,7 +12,7 @@ import java.util.Random;
 
 public class BombI extends BItem implements Listener {
     @Override
-    Material MATERIAL() {
+    public Material MATERIAL() {
         return Material.TNT;
     }
 
@@ -31,7 +31,7 @@ public class BombI extends BItem implements Listener {
         if (e.getItem() == null) return;
         if (!Objects.requireNonNull(e.getItem()).equals(this.getItemStack())) return;
         e.setCancelled(true);
-        Game.bombPlantPlayerPlan = GamePlayers.get(e.getPlayer());
+        Game.bombPlantPlayer = GamePlayers.get(e.getPlayer());
         Game.bombPlantCode = String.valueOf(new Random().nextInt(1000000));
         e.getPlayer().sendMessage("爆弾コードをチャットに打て", "コード:"+Game.bombPlantCode);
     }
