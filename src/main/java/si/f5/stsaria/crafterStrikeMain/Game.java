@@ -35,6 +35,7 @@ public class Game extends BukkitRunnable implements Listener {
 
     public static GamePlayer bombPlantPlayerPlan;
     public static String bombPlantCode = null;
+    public static String bombDefuseCode = null;
 
     public boolean endF(){
         return endF;
