@@ -44,6 +44,9 @@ public abstract class BTeam {
     public final void allRemove(){
         this.team.getEntries().forEach(this.team::removeEntry);
     }
+    public final void remove(Player player){
+        this.team.removeEntry(player.getName());
+    }
     public final ArrayList<Player> list(){
         ArrayList<Player> players = new ArrayList<>();
         this.team.getEntries().forEach(n -> players.add(Bukkit.getPlayer(n)));

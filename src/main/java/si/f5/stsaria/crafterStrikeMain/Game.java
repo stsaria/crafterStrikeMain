@@ -8,6 +8,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import si.f5.stsaria.crafterStrikeMain.items.BombI;
@@ -54,6 +56,8 @@ public class Game extends BukkitRunnable implements Listener {
 
         plugin.getServer().getPluginManager().registerEvents(new BuyMenuOpenerI(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new BuyGui(), plugin);
+
+        plugin.getServer().setWhitelist(true);
 
         runTaskTimer(plugin,0,0);
     }
@@ -106,13 +110,15 @@ public class Game extends BukkitRunnable implements Listener {
                 }
             }
             step = Step.BUY_TIME;
-            timer = new Timer(Constants.BUY_SECOND);
+            plugin.getServer().setWhitelist(false);
+            Bukkit.getOnlinePlayers().forEach(GamePlayers::add);
             this.initialF = true;
             return true;
         });
     }
     private void buy(){
         if (this.initialF){
+            timer = new Timer(Constants.BUY_SECOND);
             for (Player p : Bukkit.getOnlinePlayers()) {
                 GamePlayer gP = GamePlayers.get(p);
                 if (gP == null) continue;
@@ -163,7 +169,18 @@ public class Game extends BukkitRunnable implements Listener {
     public void onChat(AsyncPlayerChatEvent e){
         if (e.getMessage().equals(bombPlantCode)){
             Objects.requireNonNull(Bukkit.getWorld("world"))
-                    .getBlockAt(bombPlantLocation).setType(new BombI().MATERIAL());
+            .getBlockAt(bombPlantLocation).setType(new BombI().MATERIAL());
+        }
+    }
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e){
+        if (!this.step.equals(Step.WAITING_PLAYER)) e.getPlayer().setGameMode(GameMode.SPECTATOR);
+    }
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent e){
+        if (!this.step.equals(Step.WAITING_PLAYER) && GamePlayers.get(e.getPlayer()) != null){
+            if (attackTeam.contains(e.getPlayer())) attackTeam.remove(e.getPlayer());
+            if (defenceTeam.contains(e.getPlayer())) defenceTeam.remove(e.getPlayer());
         }
     }
 }

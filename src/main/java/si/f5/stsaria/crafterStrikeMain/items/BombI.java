@@ -3,6 +3,7 @@ package si.f5.stsaria.crafterStrikeMain.items;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import si.f5.stsaria.crafterStrikeMain.Game;
 import si.f5.stsaria.crafterStrikeMain.GamePlayers;
@@ -27,12 +28,12 @@ public class BombI extends BItem implements Listener {
     }
 
     @EventHandler
-    public void ballFiring(PlayerInteractEvent e) {
-        if (e.getItem() == null) return;
-        if (!Objects.requireNonNull(e.getItem()).equals(this.getItemStack())) return;
+    public void getPlacedBlock(BlockPlaceEvent e) {
+        if (!e.getItemInHand().equals(this.getItemStack())) return;
         e.setCancelled(true);
         Game.bombPlantPlayer = GamePlayers.get(e.getPlayer());
         Game.bombPlantCode = String.valueOf(new Random().nextInt(1000000));
+        Game.bombPlantLocation = e.getBlock().getLocation();
         e.getPlayer().sendMessage("爆弾コードをチャットに打て", "コード:"+Game.bombPlantCode);
     }
 }
