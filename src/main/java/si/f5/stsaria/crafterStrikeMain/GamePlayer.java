@@ -28,7 +28,6 @@ public class GamePlayer {
     }
     public void addKill(){
         this.kill++;
-        this.money += Constants.KILL_MONEY;
     }
     public void addDeath(){
         this.death++;

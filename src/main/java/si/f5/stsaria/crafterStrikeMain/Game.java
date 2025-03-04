@@ -3,6 +3,7 @@ package si.f5.stsaria.crafterStrikeMain;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,6 +29,7 @@ import java.util.logging.Level;
 public class Game extends BukkitRunnable implements Listener {
 
     private final JavaPlugin plugin;
+    private final FileConfiguration config;
     private Step step;
     private Timer timer;
     private AttackT attackTeam;
@@ -52,12 +54,29 @@ public class Game extends BukkitRunnable implements Listener {
 
     public Game(JavaPlugin plugin){
         this.plugin = plugin;
+        this.config = plugin.getConfig();
         this.step = Step.WAITING_PLAYER;
 
         plugin.getServer().getPluginManager().registerEvents(new BuyMenuOpenerI(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new BuyGui(), plugin);
 
         plugin.getServer().setWhitelist(true);
+
+        config.addDefault("mapName", "Hoge");
+        config.addDefault("buySecond", 20);
+        config.addDefault("playSecond", 120);
+        config.addDefault("endSecond", 5);
+        config.addDefault("moneyPerWin", 3000);
+        config.addDefault("moneyPerLose", 2700);
+        config.addDefault("moneyPerOneKill", 290);
+        config.addDefault("moneyPerBombPlant", 500);
+        config.addDefault("attackSpawnLocation", new int[]{0, 0, 0});
+        config.addDefault("defenceSpawnLocation", new int[]{0, 0, 0});
+        config.addDefault("spawnMovableBlockAreaXZ", new int[]{5, 5});
+        config.addDefault("bombPlantLocation", new int[]{0, 0, 0});
+        config.addDefault("bombPlantableBlockAreaXZ", new int[]{6, 6});
+
+        plugin.saveConfig();
 
         runTaskTimer(plugin,0,0);
     }
@@ -118,7 +137,7 @@ public class Game extends BukkitRunnable implements Listener {
     }
     private void buy(){
         if (this.initialF){
-            timer = new Timer(Constants.BUY_SECOND);
+            this.timer = new Timer(this.config.getInt("buySecond", DefaultConstants.BUY_SECOND));
             for (Player p : Bukkit.getOnlinePlayers()) {
                 GamePlayer gP = GamePlayers.get(p);
                 if (gP == null) continue;
@@ -129,10 +148,13 @@ public class Game extends BukkitRunnable implements Listener {
             }
             this.initialF = false;
         }
-        if (!timer.countDown()) this.step = Step.NORMAL_PLAY_TIME; this.initialF = true;
+        if (!this.timer.countDown()) this.step = Step.NORMAL_PLAY_TIME; this.initialF = true;
     }
     private void play(){
-        if (!timer.countDown()) this.step = Step.IN_PLAY_END;
+        if (this.initialF){
+            this.timer = new Timer(this.config.getInt("playSecond", DefaultConstants.PLAY_SECOND));
+        }
+        if (!this.timer.countDown()) this.step = Step.IN_PLAY_END;
     }
     private void teamSwap(){
         ArrayList<Player> defencePlayers = this.defenceTeam.list();
@@ -154,6 +176,7 @@ public class Game extends BukkitRunnable implements Listener {
         if (dGP == null || kGP == null) return;
         dGP.addDeath();
         kGP.addKill();
+        kGP.addMoney(this.config.getInt("moneyPerOneKill", DefaultConstants.KILL_MONEY));
         kGP.getPlayer().setGameMode(GameMode.SPECTATOR);
         e.setDeathMessage(
             (attackTeam.contains(kGP.getPlayer()) ? attackTeam.COLOR() : defenceTeam.COLOR()) +

@@ -2,10 +2,10 @@ package si.f5.stsaria.crafterStrikeMain.items;
 
 import org.bukkit.Material;
 
-public class IronABI extends BuyGameItem {
+public class IronABI extends BBuyGameI {
 
     @Override
-    Material MATERIAL() {
+    public Material MATERIAL() {
         return Material.TIPPED_ARROW;
     }
 

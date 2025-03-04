@@ -2,10 +2,10 @@ package si.f5.stsaria.crafterStrikeMain.items;
 
 import org.bukkit.Material;
 
-public class NetheriteABI extends BuyGameItem {
+public class NetheriteABI extends BBuyGameI {
 
     @Override
-    Material MATERIAL() {
+    public Material MATERIAL() {
         return Material.SPECTRAL_ARROW;
     }
 

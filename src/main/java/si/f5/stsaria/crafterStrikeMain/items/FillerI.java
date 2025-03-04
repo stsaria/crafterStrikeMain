@@ -5,7 +5,7 @@ import org.bukkit.Material;
 public class FillerI extends BItem {
 
     @Override
-    Material MATERIAL() {
+    public Material MATERIAL() {
         return Material.STICK;
     }
 
