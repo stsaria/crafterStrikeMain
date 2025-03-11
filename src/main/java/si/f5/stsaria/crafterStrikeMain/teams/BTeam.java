@@ -15,8 +15,6 @@ public abstract class BTeam {
     abstract String NAME();
     abstract String DISPLAY();
     public abstract ChatColor COLOR();
-    abstract String MESSAGE_PLANT_BOMB();
-    abstract String MESSAGE_BOMBED();
 
     public BTeam() {
         this.team = Objects.requireNonNull(Bukkit.getScoreboardManager())
@@ -56,5 +54,8 @@ public abstract class BTeam {
         ArrayList<Player> players = new ArrayList<>();
         this.list().forEach(p -> {if (p.getGameMode() != GameMode.SPECTATOR) players.add(p);});
         return players;
+    }
+    public void message(String message){
+        this.list().forEach(p -> p.sendMessage(message));
     }
 }

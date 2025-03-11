@@ -22,6 +22,11 @@ public class GamePlayers {
         }
         return null;
     }
+    public static ArrayList<GamePlayer> getAll(){
+        synchronized (lock){
+            return new ArrayList<>(players);
+        }
+    }
     public static void setItem(int slot, ItemStack itemStack){
         synchronized (lock) {
             players.forEach(p -> p.getPlayer().getInventory().setItem(slot, itemStack));

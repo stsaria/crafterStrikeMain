@@ -17,16 +17,4 @@ public class AttackT extends BTeam {
     public ChatColor COLOR() {
         return ChatColor.RED;
     }
-
-    @Override
-    String MESSAGE_PLANT_BOMB() {
-        return "爆弾を設置した。";
-    }
-
-    @Override
-    String MESSAGE_BOMBED() {
-        return "C4が爆発した。作戦は成功だ。";
-    }
-
-
 }
