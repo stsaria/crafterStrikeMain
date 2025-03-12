@@ -41,13 +41,14 @@ public class BombI extends BItem implements Listener {
         e.setCancelled(true);
         if (!e.getBlock().getDrops().contains(this.getItemStack())) return;
         Location l = e.getBlock().getLocation();
-        else if (!Calculator.isXZIncludeRange(
+        if (!Calculator.isXYZIncludeRange(
             Game.configGetIntList("bombPlantLocation").getFirst(),
             Game.configGetIntList("bombPlantLocation").get(1),
-            (int) l.getX(),
-            (int) l.getZ(),
-            Game.configGetIntList("bombDeathBlockAreaXZ").getFirst(),
-            Game.configGetIntList("bombDeathBlockAreaXZ").getLast()
+            Game.configGetIntList("bombPlantLocation").getLast(),
+            l.getBlockX(),
+            l.getBlockY(),
+            l.getBlockZ(),
+            Game.configGetInt("bombPlantableBlock")
         )) return;
         else if (Objects.requireNonNull(Bukkit.getWorld("world")).getBlockAt((int) l.getX(), (int) l.getY()-1, (int) l.getZ()).getType().equals(Material.AIR)) return;
         Game.bombPlantPlayer = GamePlayers.get(e.getPlayer());

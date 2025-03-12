@@ -32,12 +32,4 @@ public class GamePlayers {
             players.forEach(p -> p.getPlayer().getInventory().setItem(slot, itemStack));
         }
     }
-    public static void distanceKill(int x, int y, int z, int d){
-        synchronized (lock) {
-            players.forEach( p -> {
-                Location l = p.getPlayer().getLocation();
-                if (Math.abs(l.getX()-x) + Math.abs(l.getY()-y) + Math.abs(l.getZ()-z) <= d) p.getPlayer().setHealth(0);
-            });
-        }
-    }
 }

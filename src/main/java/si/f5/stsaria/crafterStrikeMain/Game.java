@@ -1,17 +1,16 @@
 package si.f5.stsaria.crafterStrikeMain;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import si.f5.stsaria.crafterStrikeMain.items.BombI;
@@ -77,11 +76,12 @@ public class Game extends BukkitRunnable implements Listener {
         config.addDefault("moneyPerLose", 2700);
         config.addDefault("moneyPerOneKill", 290);
         config.addDefault("moneyPerBombPlant", 500);
+        config.addDefault("winRounds", 13);
         config.addDefault("attackSpawnLocation", new int[]{0, 0, 0});
         config.addDefault("defenceSpawnLocation", new int[]{0, 0, 0});
         config.addDefault("spawnMovableBlockAreaXZ", new int[]{5, 5});
         config.addDefault("bombPlantLocation", new int[]{0, 0, 0});
-        config.addDefault("bombPlantableBlockAreaXZ", new int[]{6, 6});
+        config.addDefault("bombPlantableBlock", 6);
         config.addDefault("bombDeathBlockAreaXZ", new int[]{10, 10});
         config.addDefault("attackBombPlantMessage", "爆弾を設置した。");
         config.addDefault("attackBombedMessage", "C4が爆発した。");
@@ -117,17 +117,17 @@ public class Game extends BukkitRunnable implements Listener {
         if (this.step == Step.WAITING_PLAYER){
             this.step = Step.EMP;
             waitingAndStart();
-        } else if (this.step == Step.BUY_TIME){
+        } else if (this.step.equals(Step.BUY_TIME)){
             this.buy();
-        } else if (this.step == Step.NORMAL_PLAY_TIME){
+        } else if (this.step.equals(Step.NORMAL_PLAY_TIME)){
             this.play();
-        } else if (this.step == Step.BOMB_PLAY_TIME){
-            this.step = Step.EMP;
-            this.timer = new Timer(45);
-        } else if (this.step == Step.TEAM_SWP){
-            teamSwap();
-            this.step = Step.BUY_TIME;
-        } else if (this.step == Step.END){
+        } else if (this.step.equals(Step.BOMB_PLAY_TIME)){
+            this.bombPlay();
+        } else if (this.step.equals(Step.TEAM_SWP)){
+            this.teamSwap();
+        } else if (this.step.equals(Step.IN_PLAY_END)){
+            this.inPlayEnd();
+        } else if (this.step.equals(Step.END)){
 
         }
     }
@@ -181,32 +181,45 @@ public class Game extends BukkitRunnable implements Listener {
     private void play(){
         if (this.initialF){
             this.timer = new Timer(config.getInt("playSecond"));
+            GamePlayers.setItem(0, new ItemStack(Material.BOW));
+            GamePlayers.setItem(1, new ItemStack(Material.CROSSBOW));
         }
-        if (!this.timer.countDown()) {this.step = Step.IN_PLAY_END; this.initialF = true;}
+        if (!this.timer.countDown()) {
+            this.step = Step.IN_PLAY_END;
+            this.initialF = true;
+            this.result = Result.TIME_OVER;
+
+            this.winTeam = this.defenceTeam;
+        }
     }
     private void bombPlay(){
         if (this.initialF){
             this.timer = new Timer(config.getInt("bombPlaySecond"));
+            this.attackTeam.list().forEach(p -> {
+                if (GamePlayers.get(p) != null){
+                    Objects.requireNonNull(GamePlayers.get(p)).addMoney(config.getInt("moneyPerPlant"));
+                }
+            });
         }
         if (!this.timer.countDown()) {
             this.step = Step.IN_PLAY_END;
             this.initialF = true;
 
             this.winTeam = this.attackTeam;
+            this.result = Result.BOMBED;
 
             Bukkit.getOnlinePlayers().forEach(p -> {
                 if (p.getGameMode() != GameMode.SURVIVAL) return;
                 Location pL = p.getLocation();
-                List<Integer> bombDeathAreaDistance = config.getIntegerList("bombDeathBlockAreaXZ");
-                if (Calculator.isXZIncludeRange(
-                        pL.getBlockX(),
-                        pL.getBlockZ(),
-                        bombPlantLocation.getBlockX(),
-                        bombPlantLocation.getBlockZ(),
-                        bombDeathAreaDistance.getFirst(),
-                        bombDeathAreaDistance.getLast()
-                    )
-                ){
+                if (Calculator.isXYZIncludeRange(
+                    pL.getBlockX(),
+                    pL.getBlockY(),
+                    pL.getBlockZ(),
+                    bombPlantLocation.getBlockX(),
+                    bombPlantLocation.getBlockY(),
+                    bombPlantLocation.getBlockZ(),
+                    config.getInt("bombDeathBlock")
+                )){
                     p.setHealth(0);
                 }
             });
@@ -214,6 +227,8 @@ public class Game extends BukkitRunnable implements Listener {
     }
     private void inPlayEnd(){
         if (this.initialF){
+            this.timer = new Timer(config.getInt("inPlayEndSecond"));
+
             String winMessage = "";
             String loseMessage = "";
 
@@ -232,17 +247,20 @@ public class Game extends BukkitRunnable implements Listener {
 
             this.winTeam.message(winMessage);
             this.loseTeam.message(loseMessage);
-
-            this.winTeam = null;
-            this.loseTeam = null;
+        }
+        if (!this.timer.countDown()) {
+            this.step = Step.BUY_TIME;
 
             bombPlantPlayer = null;
             bombPlantLocation = null;
             bombPlantCode = null;
             bombDefusePlayer = null;
             bombDefuseCode = null;
-        }
 
+            this.winTeam = null;
+            this.loseTeam = null;
+            this.initialF = true;
+        }
     }
     private void teamSwap(){
         ArrayList<Player> defencePlayers = this.defenceTeam.list();
@@ -261,27 +279,33 @@ public class Game extends BukkitRunnable implements Listener {
         this.initialF = true;
     }
     @EventHandler
-    public void onKill(PlayerDeathEvent e){
-        if (!(this.step.equals(Step.NORMAL_PLAY_TIME) || this.step.equals(Step.BOMB_PLAY_TIME))) return;
-        GamePlayer dGP = GamePlayers.get(e.getEntity());
-        GamePlayer kGP = GamePlayers.get(e.getEntity().getKiller());
-        if (dGP == null || kGP == null) return;
-        dGP.addDeath();
-        kGP.addKill();
-        kGP.addMoney(config.getInt("moneyPerOneKill"));
-        kGP.getPlayer().setGameMode(GameMode.SPECTATOR);
-        e.setDeathMessage(
-            (attackTeam.contains(kGP.getPlayer()) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
-            kGP.getPlayer().getDisplayName() +
+    public void onDamage(EntityDamageByEntityEvent e) {
+        GamePlayer aGP;
+        GamePlayer vGP;
+        try {
+            aGP = GamePlayers.get((Player) e.getDamager());
+            vGP = GamePlayers.get((Player) e.getEntity());
+        } catch (Exception ignore) {return;}
+        if (aGP == null || vGP == null) return;
+        if (vGP.getPlayer().getHealth() < 1){
+            e.setCancelled(true);
+            aGP.addKill();
+            vGP.addDeath();
+            vGP.getPlayer().setGameMode(GameMode.SPECTATOR);
+        }
+
+        Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(
+            (attackTeam.contains(aGP.getPlayer()) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
+            aGP.getPlayer().getDisplayName() +
             " kill -> " +
-            (attackTeam.contains(dGP.getPlayer()) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
-            kGP.getPlayer().getDisplayName()
-        );
+            (attackTeam.contains(vGP.getPlayer()) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
+            vGP.getPlayer().getDisplayName()
+        ));
 
         if (this.winTeam != null) return;
         if (this.attackTeam.notSpectatorList().isEmpty()) this.winTeam = defenceTeam;
         else if (this.defenceTeam.notSpectatorList().isEmpty()) this.winTeam = attackTeam;
-        this.step = Step.IN_PLAY_END;
+        if (this.winTeam != null) this.step = Step.IN_PLAY_END;
     }
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e){
@@ -291,8 +315,9 @@ public class Game extends BukkitRunnable implements Listener {
             this.step = Step.BOMB_PLAY_TIME;
             this.initialF = true;
         }
-        if (this.step.equals(Step.BOMB_PLAY_TIME) && e.getMessage().equals(bombDefuseCode) && e.getPlayer().equals(bombDefusePlayer.getPlayer())){
-            this.step = Step.BOMB_PLAY_TIME;
+        if (this.step.equals(Step.BOMB_PLAY_TIME) && e.getMessage().equals(bombDefuseCode) && e.getPlayer().equals(bombDefusePlayer.getPlayer()) && this.defenceTeam.contains(bombDefusePlayer.getPlayer())){
+            this.winTeam = this.defenceTeam;
+            this.step = Step.IN_PLAY_END;
             this.initialF = true;
         }
     }

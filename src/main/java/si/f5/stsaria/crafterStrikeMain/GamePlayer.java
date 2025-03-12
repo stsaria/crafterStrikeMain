@@ -27,6 +27,7 @@ public class GamePlayer {
         return this.death > 0 ? this.kill/this.death : this.kill;
     }
     public void addKill(){
+        this.addMoney(Game.configGetInt("moneyPerOneKill"));
         this.kill++;
     }
     public void addDeath(){
