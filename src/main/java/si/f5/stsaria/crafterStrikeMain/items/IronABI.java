@@ -1,7 +1,6 @@
 package si.f5.stsaria.crafterStrikeMain.items;
 
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import si.f5.stsaria.crafterStrikeMain.AdvEnchantment;
 
 import java.util.ArrayList;

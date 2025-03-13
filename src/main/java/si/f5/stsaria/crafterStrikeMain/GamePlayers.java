@@ -1,6 +1,5 @@
 package si.f5.stsaria.crafterStrikeMain;
 
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 

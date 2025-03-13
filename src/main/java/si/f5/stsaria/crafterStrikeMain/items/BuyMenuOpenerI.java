@@ -1,6 +1,5 @@
 package si.f5.stsaria.crafterStrikeMain.items;
 
-import kotlin.OverloadResolutionByLambdaReturnType;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
