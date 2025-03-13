@@ -58,4 +58,7 @@ public abstract class BTeam {
     public void message(String message){
         this.list().forEach(p -> p.sendMessage(message));
     }
+    public void title(String title){
+        this.list().forEach(p -> p.sendTitle(title, null, 20, 60, 2));
+    }
 }

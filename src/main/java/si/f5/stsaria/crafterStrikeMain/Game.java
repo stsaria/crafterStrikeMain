@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -39,7 +38,6 @@ public class Game extends BukkitRunnable implements Listener {
     private DefenceT defenceTeam;
 
     private boolean initialF = false;
-    private boolean endF = false;
 
     private BTeam winTeam = null;
     private BTeam loseTeam = null;
@@ -49,13 +47,6 @@ public class Game extends BukkitRunnable implements Listener {
     public static String bombPlantCode = null;
     public static GamePlayer bombDefusePlayer = null;
     public static String bombDefuseCode = null;
-
-    public boolean endF(){
-        return endF;
-    }
-    public void endF(boolean b){
-        this.endF = b;
-    }
 
     public Game(JavaPlugin plugin){
         this.plugin = plugin;
@@ -67,11 +58,11 @@ public class Game extends BukkitRunnable implements Listener {
 
         this.plugin.getServer().setWhitelist(true);
 
-        config.addDefault("mapName", "Hoge");
         config.addDefault("buySecond", 20);
         config.addDefault("playSecond", 120);
         config.addDefault("bombPlaySecond", 40);
         config.addDefault("inPlayEndSecond", 5);
+        config.addDefault("endSecond", 8);
         config.addDefault("moneyPerWin", 3000);
         config.addDefault("moneyPerLose", 2700);
         config.addDefault("moneyPerOneKill", 290);
@@ -95,6 +86,8 @@ public class Game extends BukkitRunnable implements Listener {
         config.addDefault("teamSwapTitle", "攻撃/守備 切り替え");
         config.addDefault("bombPlantCodeMessage", "設置コードをチャットに打て\nコード:");
         config.addDefault("bombDefuseCodeMessage", "解除コードをチャットに打て\nコード:");
+        config.addDefault("endWinTitle", ChatColor.AQUA+"勝利");
+        config.addDefault("endLoseTitle", ChatColor.RED+"敗北");
         config.options().copyDefaults(true);
 
         this.plugin.saveConfig();
@@ -128,7 +121,7 @@ public class Game extends BukkitRunnable implements Listener {
         } else if (this.step.equals(Step.IN_PLAY_END)){
             this.inPlayEnd();
         } else if (this.step.equals(Step.END)){
-
+            this.end();
         }
     }
     private void waitingAndStart(){
@@ -183,6 +176,7 @@ public class Game extends BukkitRunnable implements Listener {
             this.timer = new Timer(config.getInt("playSecond"));
             GamePlayers.setItem(0, new ItemStack(Material.BOW));
             GamePlayers.setItem(1, new ItemStack(Material.CROSSBOW));
+            this.initialF = false;
         }
         if (!this.timer.countDown()) {
             this.step = Step.IN_PLAY_END;
@@ -200,6 +194,7 @@ public class Game extends BukkitRunnable implements Listener {
                     Objects.requireNonNull(GamePlayers.get(p)).addMoney(config.getInt("moneyPerPlant"));
                 }
             });
+            this.initialF = false;
         }
         if (!this.timer.countDown()) {
             this.step = Step.IN_PLAY_END;
@@ -247,9 +242,14 @@ public class Game extends BukkitRunnable implements Listener {
 
             this.winTeam.message(winMessage);
             this.loseTeam.message(loseMessage);
+
+            winTeam.upScore();
+
+            this.initialF = false;
         }
         if (!this.timer.countDown()) {
             this.step = Step.BUY_TIME;
+            this.initialF = true;
 
             bombPlantPlayer = null;
             bombPlantLocation = null;
@@ -257,9 +257,26 @@ public class Game extends BukkitRunnable implements Listener {
             bombDefusePlayer = null;
             bombDefuseCode = null;
 
+            if (winTeam.score() >= config.getInt("winRounds")){
+                this.step = Step.END;
+                return;
+            }
             this.winTeam = null;
             this.loseTeam = null;
-            this.initialF = true;
+        }
+    }
+    private void end(){
+        if (this.initialF){
+            this.timer = new Timer(config.getInt("endSecond"));
+
+            this.winTeam.title(config.getString("endWinTitle"));
+            this.loseTeam.title(config.getString("endLoseTitle"));
+
+            this.initialF = false;
+        }
+        if (!this.timer.countDown()) {
+            this.step = Step.EMP;
+            plugin.getServer().shutdown();
         }
     }
     private void teamSwap(){

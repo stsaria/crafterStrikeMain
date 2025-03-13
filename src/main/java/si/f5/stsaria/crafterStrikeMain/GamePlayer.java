@@ -23,6 +23,9 @@ public class GamePlayer {
     public int getKill(){
         return this.kill;
     }
+    public int getDeath(){
+        return this.death;
+    }
     public int getKillDeathRate(){
         return this.death > 0 ? this.kill/this.death : this.kill;
     }

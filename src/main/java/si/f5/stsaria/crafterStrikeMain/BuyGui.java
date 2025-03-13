@@ -47,7 +47,6 @@ public class BuyGui implements Listener {
         gP.getPlayer().getInventory().setItem(8, item);
         BuyMenuOpenerI openerI = new BuyMenuOpenerI();
         openerI.setMoney(gP);
-        openerI.bindingEnchant();
         e.getWhoClicked().getInventory().setItem(0, openerI.getItemStack());
     }
 
