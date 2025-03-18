@@ -8,35 +8,55 @@ import java.util.Objects;
 
 public class GamePlayer {
     private final OfflinePlayer player;
-    private int kill = 0;
-    private int death = 0;
-    private int money = 0;
+    private int kill;
+    private int death;
+    private int money;
+    private final Object lock = new Object();
+
     public GamePlayer(Player player){
         this.player = player;
+        kill = 0;
+        death = 0;
+        money = 0;
     }
     public Player getPlayer(){
         return Bukkit.getPlayer(Objects.requireNonNull(this.player.getName()));
     }
     public int getMoney(){
-        return this.money;
+        synchronized (lock) {
+            return this.money;
+        }
     }
     public int getKill(){
-        return this.kill;
+        synchronized (lock) {
+            return this.kill;
+        }
     }
     public int getDeath(){
-        return this.death;
+        synchronized (lock) {
+            return this.death;
+        }
     }
     public int getKillDeathRate(){
-        return this.death > 0 ? this.kill/this.death : this.kill;
+        synchronized (lock) {
+            return this.death > 0 ? this.kill / this.death : this.kill;
+        }
     }
     public void addKill(){
-        this.addMoney(Game.configGetInt("moneyPerOneKill"));
-        this.kill++;
+        synchronized (lock) {
+            this.addMoney(Game.configGetInt("moneyPerOneKill"));
+            this.kill++;
+        }
     }
     public void addDeath(){
-        this.death++;
+        synchronized (lock) {
+            this.death++;
+        }
     }
     public void addMoney(int money){
-        this.money += money;
+        synchronized (lock) {
+            this.money += money;
+            System.out.println("Updated money: " + this.money);
+        }
     }
 }

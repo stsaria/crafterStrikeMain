@@ -36,8 +36,11 @@ public abstract class BTeam {
     public final int score(){
         return this.score;
     }
+    public final void add(Player player){
+        this.team.addEntry(player.getName());
+    }
     public final void allAdd(ArrayList<Player> players){
-        players.forEach(n -> this.team.addEntry(n.getName()));
+        players.forEach(this::add);
     }
     public final void allRemove(){
         this.team.getEntries().forEach(this.team::removeEntry);
@@ -59,6 +62,6 @@ public abstract class BTeam {
         this.list().forEach(p -> p.sendMessage(message));
     }
     public void title(String title){
-        this.list().forEach(p -> p.sendTitle(title, null, 20, 60, 2));
+        this.list().forEach(p -> p.sendTitle(title, null));
     }
 }

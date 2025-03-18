@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import si.f5.stsaria.crafterStrikeMain.AdvEnchantment;
 import si.f5.stsaria.crafterStrikeMain.Calculator;
@@ -58,7 +59,7 @@ public class BombI extends BItem implements Listener {
     }
 
     @EventHandler
-    public void onBlockBreak(BlockPlaceEvent e) {
+    public void onBlockBreak(BlockBreakEvent e) {
         e.setCancelled(true);
         if (!e.getBlock().getDrops().contains(this.getItemStack())) return;
         else if (!e.getBlock().getLocation().equals(Game.bombPlantLocation)) return;

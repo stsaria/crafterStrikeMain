@@ -22,10 +22,9 @@ public abstract class BItem {
         if (itemMeta == null) return;
         itemMeta.setDisplayName(this.NAME());
         itemMeta.setLore(Arrays.asList(ABOUT().split("\n")));
+        ADV_ENCHANTMENTS().forEach(aE -> itemMeta.addEnchant(aE.enchantment(), aE.level(), true));
         this.itemStack.setItemMeta(itemMeta);
-        ADV_ENCHANTMENTS().forEach(aE -> this.itemStack.addEnchantment(aE.enchantment(), aE.level()));
     }
-
     public ItemStack getItemStack(){
         return itemStack.clone();
     }

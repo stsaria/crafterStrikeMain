@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GamePlayers {
     private static final ArrayList<GamePlayer> players = new ArrayList<>();
@@ -11,17 +12,21 @@ public class GamePlayers {
     public static void add(Player player){
         synchronized (lock){
             players.add(new GamePlayer(player));
+            System.out.println("Added player: " + player.getName());
         }
     }
     public static GamePlayer get(Player player){
         synchronized (lock){
-            for (GamePlayer p : players){
-                if (p.getPlayer().getName().equals(player.getName())) return p;
+            for (int i = 0; i < players.size(); i++){
+                if (players.get(i).getPlayer().getName().equals(player.getName())){
+                    System.out.println("Retrieved player: " + player.getName() + " | Money: " + players.get(i).getMoney());  // デバッグ用
+                    return players.get(i);
+                }
             }
         }
         return null;
     }
-    public static ArrayList<GamePlayer> getAll(){
+    public static List<GamePlayer> getAll(){
         synchronized (lock){
             return new ArrayList<>(players);
         }
