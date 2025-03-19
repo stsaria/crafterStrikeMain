@@ -1,11 +1,14 @@
 package si.f5.stsaria.crafterStrikeMain.teams;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -61,7 +64,10 @@ public abstract class BTeam {
     public void message(String message){
         this.list().forEach(p -> p.sendMessage(message));
     }
-    public void title(String title){
+    public void title(String title) {
         this.list().forEach(p -> p.sendTitle(title, null));
+    }
+    public void actionbar(String message){
+        this.list().forEach(p -> p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message)));
     }
 }

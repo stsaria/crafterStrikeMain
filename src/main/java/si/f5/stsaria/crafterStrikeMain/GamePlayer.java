@@ -19,6 +19,9 @@ public class GamePlayer {
         death = 0;
         money = 0;
     }
+    public String getName(){
+        return this.player.getName();
+    }
     public Player getPlayer(){
         return Bukkit.getPlayer(Objects.requireNonNull(this.player.getName()));
     }

@@ -75,7 +75,7 @@ public class Game extends BukkitRunnable implements Listener {
         config.addDefault("bombDeathBlockAreaXZ", new int[]{10, 10});
         config.addDefault("startGameMessage", "ゲームを開始します！");
         config.addDefault("cantBuyMessage", "お金が足りません！");
-        config.addDefault("startRoundMessage", "ゲームを開始します！");
+        config.addDefault("startRoundMessage", "ラウンド開始！！");
         config.addDefault("attackBombPlantMessage", "爆弾を設置した。");
         config.addDefault("attackBombedMessage", "C4が爆発した。");
         config.addDefault("defenceBombPlantMessage", ChatColor.RED+"爆弾が設置された！爆弾を解除しろ！");
@@ -98,6 +98,7 @@ public class Game extends BukkitRunnable implements Listener {
         config.addDefault("wordPrice", "値段");
         config.addDefault("wordPocket", "所持金");
         config.addDefault("wordShop", "ショップ");
+        config.addDefault("worldName", "worldName");
 
         config.options().copyDefaults(true);
 
@@ -129,8 +130,10 @@ public class Game extends BukkitRunnable implements Listener {
     public void run(){
         if (step == Step.WAITING_PLAYER){
             waitingJoinPlayers();
+            return;
         } else if (step.equals(Step.START)){
             this.start();
+            return;
         } else if (step.equals(Step.BUY_TIME)){
             this.buy();
         } else if (step.equals(Step.NORMAL_PLAY_TIME)){
@@ -139,11 +142,26 @@ public class Game extends BukkitRunnable implements Listener {
             this.bombPlay();
         } else if (step.equals(Step.TEAM_SWP)){
             this.teamSwap();
+            return;
         } else if (step.equals(Step.IN_PLAY_END)){
             this.inPlayEnd();
         } else if (step.equals(Step.END)){
             this.end();
         }
+        this.updateScore();
+
+    }
+    private void playEndSet(BTeam winTeam, BTeam loseTeam, Result result){
+        this.winTeam = winTeam;
+        this.loseTeam = loseTeam;
+        this.result = result;
+        step = Step.IN_PLAY_END;
+        try {this.timer.removeAll();} catch (Exception ignore) {}
+        this.timer = null;
+    }
+    private void updateScore(){
+        this.attackTeam.actionbar(this.attackTeam.score()+"-"+this.defenceTeam.score());
+        this.defenceTeam.actionbar(this.defenceTeam.score()+"-"+this.attackTeam.score());
     }
     private void waitingJoinPlayers(){
         if (this.timer == null){
@@ -179,8 +197,23 @@ public class Game extends BukkitRunnable implements Listener {
     private void buy(){
         if (this.timer == null){
             this.timer = new Timer(config.getInt("buySecond"), config.getString("bossBarTextBuy"));
+            Location attackSpawnL = new Location(
+                Bukkit.getWorld(Objects.requireNonNull(config.getString("worldName"))),
+                config.getIntegerList("attackSpawnLocation").getFirst(),
+                config.getIntegerList("attackSpawnLocation").get(1),
+                config.getIntegerList("attackSpawnLocation").getLast()
+            );
+            Location defenceSpawnL = new Location(
+                Bukkit.getWorld(Objects.requireNonNull(config.getString("worldName"))),
+                config.getIntegerList("defenceSpawnLocation").getFirst(),
+                config.getIntegerList("defenceSpawnLocation").get(1),
+                config.getIntegerList("defenceSpawnLocation").getLast()
+            );
             for (GamePlayer gP : GamePlayers.getAll()) {
-                gP.getPlayer().setGameMode(GameMode.SURVIVAL);
+                Player p = gP.getPlayer();
+                p.setGameMode(GameMode.SURVIVAL);
+                if (attackTeam.contains(p)) p.teleport(attackSpawnL);
+                else if (defenceTeam.contains(p)) p.teleport(defenceSpawnL);
                 BuyMenuOpenerI openerI = new BuyMenuOpenerI();
                 ItemStack openerIS = openerI.getItemStack();
                 ItemMeta openerIM = openerIS.getItemMeta();
@@ -190,6 +223,7 @@ public class Game extends BukkitRunnable implements Listener {
                 openerIS.setItemMeta(openerIM);
                 gP.getPlayer().getInventory().setItem(0, openerIS);
             }
+
         }
         if (!this.timer.countDown()) {
             Players.message(config.getString("startRoundMessage"));
@@ -206,18 +240,14 @@ public class Game extends BukkitRunnable implements Listener {
     }
     private void play(){
         if (this.timer == null){
+            Players.message(config.getString("startRoundMessage"));
             this.timer = new Timer(config.getInt("playSecond"), config.getString("bossBarTextPlay"));
             GamePlayers.setItem(0, new ItemStack(Material.BOW));
             GamePlayers.setItem(1, new ItemStack(Material.CROSSBOW));
         }
-        if (!this.timer.countDown()) {
-            step = Step.IN_PLAY_END;
-            this.result = Result.TIME_OVER;
-
-            this.winTeam = this.defenceTeam;
-            this.timer.removeAll();
-            this.timer = null;
-        }
+        if (this.attackTeam.notSpectatorList().isEmpty()) this.playEndSet(defenceTeam, attackTeam, Result.ALL_KILL);
+        else if (this.defenceTeam.notSpectatorList().isEmpty()) this.playEndSet(attackTeam, defenceTeam, Result.ALL_KILL);
+        else if (!this.timer.countDown()) this.playEndSet(defenceTeam, attackTeam, Result.TIME_OVER);
     }
     private void bombPlay(){
         if (this.timer == null){
@@ -228,14 +258,13 @@ public class Game extends BukkitRunnable implements Listener {
                 }
             });
         }
-        if (!this.timer.countDown()) {
-            step = Step.IN_PLAY_END;
-
-            this.winTeam = this.attackTeam;
-            this.result = Result.BOMBED;
-
+        if (this.defenceTeam.notSpectatorList().isEmpty()) this.playEndSet(attackTeam, defenceTeam, Result.ALL_KILL);
+        else if (!this.timer.countDown()) {
+            this.playEndSet(attackTeam, defenceTeam, Result.BOMBED);
             Bukkit.getOnlinePlayers().forEach(p -> {
                 if (p.getGameMode() != GameMode.SURVIVAL) return;
+                World world = Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(config.getString("worldName"))));
+                world.createExplosion(bombPlantLocation, 100F);
                 Location pL = p.getLocation();
                 if (Calculator.isXYZIncludeRange(
                     pL.getBlockX(),
@@ -246,11 +275,9 @@ public class Game extends BukkitRunnable implements Listener {
                     bombPlantLocation.getBlockZ(),
                     config.getInt("bombDeathBlock")
                 )){
-                    p.setHealth(0);
+                    p.damage(p.getHealth());
                 }
             });
-            this.timer.removeAll();
-            this.timer = null;
         }
     }
     private void inPlayEnd(){
@@ -270,14 +297,13 @@ public class Game extends BukkitRunnable implements Listener {
                 winMessage += config.getString("timeOverMessage");
                 loseMessage += config.getString("timeOverMessage");
             }
-            winMessage += config.getString("winEndMessage");
-            loseMessage += config.getString("loseEndMessage");
+            winMessage += "\n"+config.getString("winEndMessage");
+            loseMessage += "\n"+config.getString("loseEndMessage");
 
             this.winTeam.message(winMessage);
             this.loseTeam.message(loseMessage);
 
             winTeam.upScore();
-
         }
         if (!this.timer.countDown()) {
             step = Step.BUY_TIME;
@@ -335,15 +361,16 @@ public class Game extends BukkitRunnable implements Listener {
         try {
             aGP = GamePlayers.get((Player) e.getDamager());
             vGP = GamePlayers.get((Player) e.getEntity());
+            if (Objects.requireNonNull(vGP).getPlayer().getHealth() < 1){
+                vGP.getPlayer().setGameMode(GameMode.SPECTATOR);
+            }
         } catch (Exception ignore) {return;}
-        if (aGP == null || vGP == null) return;
+        if (aGP == null) return;
         if (vGP.getPlayer().getHealth() < 1){
             e.setCancelled(true);
             aGP.addKill();
             vGP.addDeath();
-            vGP.getPlayer().setGameMode(GameMode.SPECTATOR);
         }
-
         Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(
             (attackTeam.contains(aGP.getPlayer()) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
             aGP.getPlayer().getDisplayName() +
@@ -351,11 +378,6 @@ public class Game extends BukkitRunnable implements Listener {
             (attackTeam.contains(vGP.getPlayer()) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
             vGP.getPlayer().getDisplayName()
         ));
-
-        if (this.winTeam != null) return;
-        if (this.attackTeam.notSpectatorList().isEmpty()) this.winTeam = defenceTeam;
-        else if (this.defenceTeam.notSpectatorList().isEmpty()) this.winTeam = attackTeam;
-        if (this.winTeam != null) step = Step.IN_PLAY_END;
     }
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e){
@@ -379,8 +401,10 @@ public class Game extends BukkitRunnable implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         if (!step.equals(Step.WAITING_PLAYER) && GamePlayers.get(e.getPlayer()) != null) {
-            if (attackTeam.contains(e.getPlayer())) attackTeam.remove(e.getPlayer());
-            if (defenceTeam.contains(e.getPlayer())) defenceTeam.remove(e.getPlayer());
+            Player p = e.getPlayer();
+            if (attackTeam.contains(e.getPlayer())) attackTeam.remove(p);
+            if (defenceTeam.contains(e.getPlayer())) defenceTeam.remove(p);
+            GamePlayers.remove(p);
         }
     }
 }

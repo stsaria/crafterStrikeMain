@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 public class Players {
     public static void message(String message){
-        Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(message, null));
+        Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(message));
     }
     public static void sound(Sound sound, float volume, float pitch){
         Bukkit.getOnlinePlayers().forEach(p -> p.playSound(p, sound, volume, pitch));

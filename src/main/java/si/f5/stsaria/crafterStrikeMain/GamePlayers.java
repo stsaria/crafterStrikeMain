@@ -12,7 +12,11 @@ public class GamePlayers {
     public static void add(Player player){
         synchronized (lock){
             players.add(new GamePlayer(player));
-            System.out.println("Added player: " + player.getName());
+        }
+    }
+    public static void remove(Player player){
+        synchronized (lock){
+            players.forEach(p -> {if (p.getName().equals(player.getName())) players.remove(p);});
         }
     }
     public static GamePlayer get(Player player){
