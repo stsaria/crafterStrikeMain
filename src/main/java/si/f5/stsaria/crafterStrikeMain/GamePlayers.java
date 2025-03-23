@@ -8,35 +8,33 @@ import java.util.List;
 
 public class GamePlayers {
     private static final ArrayList<GamePlayer> players = new ArrayList<>();
-    private static final Object lock = new Object();
-    public static void add(Player player){
-        synchronized (lock){
+    public static GamePlayer add(Player player){
+        synchronized (GamePlayers.class){
             players.add(new GamePlayer(player));
+            return players.getLast();
         }
     }
     public static void remove(Player player){
-        synchronized (lock){
+        synchronized (GamePlayers.class){
             players.forEach(p -> {if (p.getName().equals(player.getName())) players.remove(p);});
         }
     }
     public static GamePlayer get(Player player){
-        synchronized (lock){
+        synchronized (GamePlayers.class){
+            // 拡張forだと複製して失敗するよ
             for (int i = 0; i < players.size(); i++){
-                if (players.get(i).getPlayer().getName().equals(player.getName())){
-                    System.out.println("Retrieved player: " + player.getName() + " | Money: " + players.get(i).getMoney());  // デバッグ用
-                    return players.get(i);
-                }
+                if (players.get(i).getPlayer().getName().equals(player.getName())) return players.get(i);
             }
         }
         return null;
     }
     public static List<GamePlayer> getAll(){
-        synchronized (lock){
+        synchronized (GamePlayers.class){
             return new ArrayList<>(players);
         }
     }
     public static void setItem(int slot, ItemStack itemStack){
-        synchronized (lock) {
+        synchronized (GamePlayers.class) {
             players.forEach(p -> p.getPlayer().getInventory().setItem(slot, itemStack));
         }
     }

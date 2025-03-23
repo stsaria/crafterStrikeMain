@@ -1,6 +1,7 @@
 package si.f5.stsaria.crafterStrikeMain.teams;
 
 import org.bukkit.ChatColor;
+import si.f5.stsaria.crafterStrikeMain.Game;
 
 public class AttackT extends BTeam {
     @Override
@@ -10,7 +11,7 @@ public class AttackT extends BTeam {
 
     @Override
     String DISPLAY() {
-        return "攻撃";
+        return Game.configGetString("wordAttackTeam");
     }
 
     @Override

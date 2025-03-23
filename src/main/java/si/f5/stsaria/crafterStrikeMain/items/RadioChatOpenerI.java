@@ -5,30 +5,22 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import si.f5.stsaria.crafterStrikeMain.AdvEnchantment;
 import si.f5.stsaria.crafterStrikeMain.Game;
-import si.f5.stsaria.crafterStrikeMain.BuyGui;
+import si.f5.stsaria.crafterStrikeMain.RadioChatGui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-public class BuyMenuOpenerI extends BItem implements Listener {
-
-    public BuyMenuOpenerI(String arg) {
-        super(arg);
-    }
-
+public class RadioChatOpenerI extends BItem implements Listener {
     @Override
     public Material MATERIAL() {
-        return Material.COMPASS;
+        return Material.ACACIA_SIGN;
     }
 
     @Override
     String NAME() {
-        return Game.configGetString("wordShop")+" - "+Game.configGetString("wordPocket")+":"+this.arg;
+        return Game.configGetString("wordRadioChat");
     }
 
     @Override
@@ -44,12 +36,8 @@ public class BuyMenuOpenerI extends BItem implements Listener {
     @EventHandler
     public void ballFiring(PlayerInteractEvent e) {
         if (e.getItem() == null) return;
-        ItemStack item = e.getItem().clone();
-        ItemMeta itemMeta = item.getItemMeta();
-        Objects.requireNonNull(itemMeta).setDisplayName(Game.configGetString("wordShop")+" - "+Game.configGetString("wordPocket")+":");
-        item.setItemMeta(itemMeta);
-        if (!item.equals(this.itemStack)) return;
+        else if (!e.getItem().equals(this.itemStack)) return;
         e.setCancelled(true);
-        new BuyGui().open(e.getPlayer());
+        new RadioChatGui().open(e.getPlayer());
     }
 }

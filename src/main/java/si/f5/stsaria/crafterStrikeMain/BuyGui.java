@@ -9,7 +9,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import si.f5.stsaria.crafterStrikeMain.items.BuyMenuOpenerI;
 import si.f5.stsaria.crafterStrikeMain.items.IronABI;
 import si.f5.stsaria.crafterStrikeMain.items.NetheriteABI;
@@ -49,16 +48,11 @@ public class BuyGui implements Listener {
         } catch (Exception ignore) {
             return;
         }
+        item.setAmount(60);
         gP.getPlayer().getInventory().setItem(8, item);
         if (!Game.getStep().equals(Step.BUY_TIME)) {
-            BuyMenuOpenerI openerI = new BuyMenuOpenerI();
-            ItemStack openerIS = openerI.getItemStack();
-            ItemMeta openerIM = openerIS.getItemMeta();
-            Objects.requireNonNull(openerIM).setDisplayName(
-                    openerIM.getDisplayName() + " - " + Game.configGetString("wordPocket") + ":" + gP.getMoney()
-            );
-            openerIS.setItemMeta(openerIM);
-            e.getWhoClicked().getInventory().setItem(0, openerIS);
+            BuyMenuOpenerI openerI = new BuyMenuOpenerI(String.valueOf(gP.getMoney()));
+            e.getWhoClicked().getInventory().setItem(0, openerI.getItemStack());
         }
     }
 

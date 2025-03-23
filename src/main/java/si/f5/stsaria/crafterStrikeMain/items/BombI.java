@@ -24,12 +24,12 @@ public class BombI extends BItem implements Listener {
 
     @Override
     String NAME() {
-        return "爆弾";
+        return Game.configGetString("wordBomb");
     }
 
     @Override
     String ABOUT() {
-        return "攻撃側の爆弾。特定の爆弾ポイントに設置する。";
+        return "";
     }
 
     @Override
@@ -42,20 +42,32 @@ public class BombI extends BItem implements Listener {
         e.setCancelled(true);
         if (!e.getBlock().getDrops().contains(this.getItemStack())) return;
         Location l = e.getBlock().getLocation();
-        if (!Calculator.isXYZIncludeRange(
-            Game.configGetIntList("bombPlantLocation").getFirst(),
-            Game.configGetIntList("bombPlantLocation").get(1),
-            Game.configGetIntList("bombPlantLocation").getLast(),
+        if (!(Calculator.isIncludeRange(
+            Game.configGetIntList("aBombPlantLocations").getFirst(),
+            Game.configGetIntList("aBombPlantLocations").get(1),
+            Game.configGetIntList("aBombPlantLocations").get(2),
+            Game.configGetIntList("aBombPlantLocations").get(3),
+            Game.configGetIntList("aBombPlantLocations").get(4),
+            Game.configGetIntList("aBombPlantLocations").getLast(),
             l.getBlockX(),
             l.getBlockY(),
-            l.getBlockZ(),
-            Game.configGetInt("bombPlantableBlock")
-        )) return;
+            l.getBlockZ()
+        ) || Calculator.isIncludeRange(
+            Game.configGetIntList("bBombPlantLocations").getFirst(),
+            Game.configGetIntList("bBombPlantLocations").get(1),
+            Game.configGetIntList("bBombPlantLocations").get(2),
+            Game.configGetIntList("bBombPlantLocations").get(3),
+            Game.configGetIntList("bBombPlantLocations").get(4),
+            Game.configGetIntList("bBombPlantLocations").getLast(),
+            l.getBlockX(),
+            l.getBlockY(),
+            l.getBlockZ()
+        ))) return;
         else if (Objects.requireNonNull(Bukkit.getWorld("world")).getBlockAt((int) l.getX(), (int) l.getY()-1, (int) l.getZ()).getType().equals(Material.AIR)) return;
         Game.bombPlantPlayer = GamePlayers.get(e.getPlayer());
         Game.bombPlantCode = String.valueOf(new Random().nextLong(Long.parseLong("99999999999999"))+Long.parseLong("10000000000000"));
         Game.bombPlantLocation = e.getBlock().getLocation();
-        e.getPlayer().sendMessage(Game.configGetString("bombAttackCodeMessage")+Game.bombPlantCode);
+        e.getPlayer().sendMessage(Game.configGetString("bombPlantCodeMessage")+Game.bombPlantCode);
     }
 
     @EventHandler

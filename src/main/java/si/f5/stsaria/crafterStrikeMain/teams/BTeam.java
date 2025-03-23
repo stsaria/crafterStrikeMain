@@ -7,8 +7,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
+import si.f5.stsaria.crafterStrikeMain.GamePlayer;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -23,6 +23,7 @@ public abstract class BTeam {
         this.team = Objects.requireNonNull(Bukkit.getScoreboardManager())
                 .getMainScoreboard().registerNewTeam(this.NAME());
         this.team.setDisplayName(this.DISPLAY());
+        this.team.setPrefix("["+this.DISPLAY()+"] ");
         this.team.setColor(this.COLOR());
         this.team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
         this.team.setOption(Team.Option.DEATH_MESSAGE_VISIBILITY, Team.OptionStatus.ALWAYS);
@@ -33,17 +34,20 @@ public abstract class BTeam {
     public final void upScore(){
         this.score++;
     }
-    public final boolean contains(Player player){
-        return this.team.getEntries().contains(player.getName());
-    }
     public final int score(){
         return this.score;
     }
-    public final void add(Player player){
+    public final boolean contains(Player player){
+        return this.team.getEntries().contains(player.getName());
+    }
+    public final boolean contains(GamePlayer player){
+        return this.team.getEntries().contains(player.getName());
+    }
+    public final void add(GamePlayer player){
         this.team.addEntry(player.getName());
     }
-    public final void allAdd(ArrayList<Player> players){
-        players.forEach(this::add);
+    public final void addAll(ArrayList<Player> players){
+        players.forEach(p -> this.team.addEntry(p.getName()));
     }
     public final void allRemove(){
         this.team.getEntries().forEach(this.team::removeEntry);

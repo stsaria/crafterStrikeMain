@@ -1,8 +1,12 @@
 package si.f5.stsaria.crafterStrikeMain;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.Objects;
 
@@ -11,7 +15,6 @@ public class GamePlayer {
     private int kill;
     private int death;
     private int money;
-    private final Object lock = new Object();
 
     public GamePlayer(Player player){
         this.player = player;
@@ -25,41 +28,63 @@ public class GamePlayer {
     public Player getPlayer(){
         return Bukkit.getPlayer(Objects.requireNonNull(this.player.getName()));
     }
-    public int getMoney(){
-        synchronized (lock) {
-            return this.money;
-        }
+    public boolean isOnline(){
+        return this.getPlayer().isOnline();
     }
-    public int getKill(){
-        synchronized (lock) {
-            return this.kill;
-        }
+    public void teleport(Location location){
+        if (this.isOnline()) this.getPlayer().teleport(location);
     }
-    public int getDeath(){
-        synchronized (lock) {
-            return this.death;
-        }
+    public void setItem(int slot, ItemStack itemStack){
+        if (this.isOnline()) this.getPlayer().getInventory().setItem(slot, itemStack);
     }
-    public int getKillDeathRate(){
-        synchronized (lock) {
-            return this.death > 0 ? this.kill / this.death : this.kill;
-        }
+    public void setGameMode(GameMode gameMode){
+        if (this.isOnline()) this.getPlayer().setGameMode(gameMode);
     }
-    public void addKill(){
-        synchronized (lock) {
-            this.addMoney(Game.configGetInt("moneyPerOneKill"));
-            this.kill++;
-        }
+    public void setHealth(double health){
+        if (this.isOnline()) this.getPlayer().setHealth(health);
     }
-    public void addDeath(){
-        synchronized (lock) {
-            this.death++;
-        }
+    public void setFoodLevel(int foodLevel){
+        if (this.isOnline()) this.getPlayer().setFoodLevel(foodLevel);
     }
-    public void addMoney(int money){
-        synchronized (lock) {
-            this.money += money;
-            System.out.println("Updated money: " + this.money);
-        }
+    public void setSaturation(float saturation){
+        if (this.isOnline()) this.getPlayer().setSaturation(saturation);
+    }
+    public double getMaxHealth(){
+        if (this.isOnline()) return Objects.requireNonNull(this.getPlayer().getAttribute(Attribute.MAX_HEALTH)).getBaseValue();
+        return 20D;
+    }
+    public GameMode getGameMode(){
+        if (this.isOnline()) return this.getPlayer().getGameMode();
+        return GameMode.SURVIVAL;
+    }
+    public Location getLocation(){
+        if (this.isOnline()) return this.getPlayer().getLocation();
+        return null;
+    }
+    public void damage(double health){
+        if (this.isOnline()) this.getPlayer().damage(health);
+    }
+
+    public synchronized int getMoney(){
+        return this.money;
+    }
+    public synchronized int getKill(){
+        return this.kill;
+    }
+    public synchronized int getDeath(){
+        return this.death;
+    }
+    public synchronized int getKillDeathRate(){
+        return this.death > 0 ? this.kill / this.death : this.kill;
+    }
+    public synchronized void addKill(){
+        this.addMoney(Game.configGetInt("moneyPerOneKill"));
+        this.kill++;
+    }
+    public synchronized void addDeath(){
+        this.death++;
+    }
+    public synchronized void addMoney(int money){
+        this.money += money;
     }
 }
