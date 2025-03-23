@@ -3,6 +3,7 @@ package si.f5.stsaria.crafterStrikeMain;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -206,6 +207,7 @@ public class Game extends BukkitRunnable implements Listener {
             if (shuffledPlayers.indexOf(p) % 2 == 0) attackTeam.add(gP);
             else defenceTeam.add(gP);
             p.getInventory().setItem(3, new RadioChatOpenerI().getItemStack());
+            p.getInventory().setItem(4, new ItemStack(Material.NETHERITE_AXE));
         }
         Players.message(config.getString("startGameMessage"));
         plugin.getServer().setWhitelist(false);
