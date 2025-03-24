@@ -197,7 +197,7 @@ public class Game extends BukkitRunnable implements Listener {
         List<Player> shuffledPlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
         Collections.shuffle(shuffledPlayers);
         for (Player p : shuffledPlayers){
-            for (int i = 0; i < 40; i++){
+            for (int i = 5; i < 40; i++){
                 if (i == 8) continue;
                 FillerI fillerI = new FillerI();
                 p.getInventory().setItem(i, fillerI.getItemStack());
