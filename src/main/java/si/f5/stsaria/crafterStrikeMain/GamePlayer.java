@@ -64,6 +64,12 @@ public class GamePlayer {
     public void damage(double health){
         if (this.isOnline()) this.getPlayer().damage(health);
     }
+    public void message(String message){
+        if (this.isOnline()) this.getPlayer().sendMessage(message);
+    }
+    public String getDisplayName(){
+        return this.getPlayer().getDisplayName();
+    }
 
     public synchronized int getMoney(){
         return this.money;
