@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class BuyMenuOpenerI extends BItem implements Listener {
-
-    public BuyMenuOpenerI(String arg) {
-        super(arg);
+    private final int money;
+    public BuyMenuOpenerI(int money) {
+        super();
+        this.money = money;
     }
 
     @Override
@@ -28,7 +29,7 @@ public class BuyMenuOpenerI extends BItem implements Listener {
 
     @Override
     String NAME() {
-        return Game.configGetString("wordShop")+" - "+Game.configGetString("wordPocket")+":"+this.arg;
+        return Game.configGetString("wordShop")+" - "+Game.configGetString("wordPocket")+":"+this.money;
     }
 
     @Override

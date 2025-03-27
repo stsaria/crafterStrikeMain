@@ -50,8 +50,8 @@ public class BuyGui implements Listener {
         }
         item.setAmount(60);
         gP.getPlayer().getInventory().setItem(8, item);
-        if (!Game.getStep().equals(Step.BUY_TIME)) {
-            BuyMenuOpenerI openerI = new BuyMenuOpenerI(String.valueOf(gP.getMoney()));
+        if (Game.getStep().equals(Step.BUY_TIME)) {
+            BuyMenuOpenerI openerI = new BuyMenuOpenerI(gP.getMoney());
             e.getWhoClicked().getInventory().setItem(0, openerI.getItemStack());
         }
     }

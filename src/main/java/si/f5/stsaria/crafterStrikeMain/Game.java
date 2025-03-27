@@ -57,7 +57,7 @@ public class Game extends BukkitRunnable implements Listener {
 
         this.plugin.getServer().getPluginManager().registerEvents(this, this.plugin);
         this.plugin.getServer().getPluginManager().registerEvents(new BombI(), this.plugin);
-        this.plugin.getServer().getPluginManager().registerEvents(new BuyMenuOpenerI(""), this.plugin);
+        this.plugin.getServer().getPluginManager().registerEvents(new BuyMenuOpenerI(0), this.plugin);
         this.plugin.getServer().getPluginManager().registerEvents(new BuyGui(), this.plugin);
         this.plugin.getServer().getPluginManager().registerEvents(new RadioChatOpenerI(), this.plugin);
         this.plugin.getServer().getPluginManager().registerEvents(new RadioChatGui(), this.plugin);
@@ -266,7 +266,7 @@ public class Game extends BukkitRunnable implements Listener {
                     }
                 }
                 else if (defenceTeam.contains(gP)) gP.teleport(defenceSpawnL);
-                BuyMenuOpenerI openerI = new BuyMenuOpenerI(String.valueOf(gP.getMoney()));
+                BuyMenuOpenerI openerI = new BuyMenuOpenerI(gP.getMoney());
                 gP.getPlayer().getInventory().setItem(0, openerI.getItemStack());
             }
             Players.sound(Sound.MUSIC_DISC_BLOCKS, 100F, 1F);

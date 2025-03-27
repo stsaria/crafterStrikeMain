@@ -28,17 +28,6 @@ public abstract class BItem {
         ADV_ENCHANTMENTS().forEach(aE -> itemMeta.addEnchant(aE.enchantment(), aE.level(), true));
         this.itemStack.setItemMeta(itemMeta);
     }
-    public BItem(String arg) {
-        this.arg = arg;
-
-        this.itemStack = new ItemStack(this.MATERIAL());
-        ItemMeta itemMeta = this.itemStack.getItemMeta();
-        if (itemMeta == null) return;
-        itemMeta.setDisplayName(this.NAME());
-        itemMeta.setLore(Arrays.asList(ABOUT().split("\n")));
-        ADV_ENCHANTMENTS().forEach(aE -> itemMeta.addEnchant(aE.enchantment(), aE.level(), true));
-        this.itemStack.setItemMeta(itemMeta);
-    }
     public ItemStack getItemStack(){
         return itemStack.clone();
     }

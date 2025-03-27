@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RadioChatMessageI extends BItem {
+    private final String message;
 
-    public RadioChatMessageI(String arg) {
-        super(arg);
+    public RadioChatMessageI(String message) {
+        super();
+        this.message = message;
     }
 
     @Override
@@ -20,7 +22,7 @@ public class RadioChatMessageI extends BItem {
 
     @Override
     String NAME() {
-        return this.arg;
+        return message;
     }
 
     @Override
