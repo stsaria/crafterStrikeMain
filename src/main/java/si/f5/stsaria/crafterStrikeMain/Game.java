@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -463,7 +464,7 @@ public class Game extends BukkitRunnable implements Listener {
         if (!step.equals(Step.WAITING_PLAYER) && GamePlayers.get(e.getPlayer()) != null) {
             Player p = e.getPlayer();
             if (attackTeam.contains(e.getPlayer())) attackTeam.remove(p);
-            if (defenceTeam.contains(e.getPlayer())) defenceTeam.remove(p);
+            else if (defenceTeam.contains(e.getPlayer())) defenceTeam.remove(p);
             GamePlayers.remove(p);
         }
     }
@@ -499,5 +500,9 @@ public class Game extends BukkitRunnable implements Listener {
         ))){
             e.setCancelled(true);
         }
+    }
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent e) {
+        e.setCancelled(true);
     }
 }
