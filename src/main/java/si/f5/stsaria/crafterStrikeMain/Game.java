@@ -13,6 +13,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Team;
+import si.f5.stsaria.crafterStrikeMain.guis.BuyG;
+import si.f5.stsaria.crafterStrikeMain.guis.RadioChatG;
 import si.f5.stsaria.crafterStrikeMain.items.BombI;
 import si.f5.stsaria.crafterStrikeMain.items.BuyMenuOpenerI;
 import si.f5.stsaria.crafterStrikeMain.items.FillerI;
@@ -58,9 +60,9 @@ public class Game extends BukkitRunnable implements Listener {
         this.plugin.getServer().getPluginManager().registerEvents(this, this.plugin);
         this.plugin.getServer().getPluginManager().registerEvents(new BombI(), this.plugin);
         this.plugin.getServer().getPluginManager().registerEvents(new BuyMenuOpenerI(0), this.plugin);
-        this.plugin.getServer().getPluginManager().registerEvents(new BuyGui(), this.plugin);
+        this.plugin.getServer().getPluginManager().registerEvents(new BuyG(), this.plugin);
         this.plugin.getServer().getPluginManager().registerEvents(new RadioChatOpenerI(), this.plugin);
-        this.plugin.getServer().getPluginManager().registerEvents(new RadioChatGui(), this.plugin);
+        this.plugin.getServer().getPluginManager().registerEvents(new RadioChatG(), this.plugin);
 
         this.plugin.getServer().setWhitelist(true);
 

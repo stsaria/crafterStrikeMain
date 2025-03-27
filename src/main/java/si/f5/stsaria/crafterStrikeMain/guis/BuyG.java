@@ -1,32 +1,30 @@
-package si.f5.stsaria.crafterStrikeMain;
+package si.f5.stsaria.crafterStrikeMain.guis;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import si.f5.stsaria.crafterStrikeMain.Game;
+import si.f5.stsaria.crafterStrikeMain.GamePlayer;
+import si.f5.stsaria.crafterStrikeMain.GamePlayers;
+import si.f5.stsaria.crafterStrikeMain.Step;
 import si.f5.stsaria.crafterStrikeMain.items.BuyMenuOpenerI;
 import si.f5.stsaria.crafterStrikeMain.items.IronABI;
 import si.f5.stsaria.crafterStrikeMain.items.NetheriteABI;
 import si.f5.stsaria.crafterStrikeMain.items.SandABI;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class BuyGui implements Listener {
-    private final Inventory inventory;
-    public BuyGui(){
-        this.inventory = Bukkit.createInventory(null, 9, "Buy Item");
-        this.inventory.addItem(new SandABI().getItemStack());
-        this.inventory.addItem(new IronABI().getItemStack());
-        this.inventory.addItem(new NetheriteABI().getItemStack());
+public class BuyG extends BGui implements Listener {
+    String TITLE(){
+        return "Buy Item";
     }
-    public void open(final HumanEntity human) {
-        human.openInventory(this.inventory);
+    List<ItemStack> ITEM_STACKS(){
+        return new ArrayList<>(List.of(new SandABI().getItemStack(), new IronABI().getItemStack(), new NetheriteABI().getItemStack()));
     }
 
     @EventHandler
@@ -41,7 +39,7 @@ public class BuyGui implements Listener {
             int price = Integer.parseInt(Objects.requireNonNull(Objects.requireNonNull(item.getItemMeta()).getLore())
                         .getFirst().replace(Game.configGetString("wordPrice")+":", ""));
             if (price > gP.getMoney()){
-                gP.getPlayer().sendMessage(Game.configGetString("cantBuyMessage"));
+                gP.message(Game.configGetString("cantBuyMessage"));
                 return;
             }
             gP.addMoney(-price);
@@ -49,15 +47,10 @@ public class BuyGui implements Listener {
             return;
         }
         item.setAmount(60);
-        gP.getPlayer().getInventory().setItem(8, item);
+        gP.setItem(8, item);
         if (Game.getStep().equals(Step.BUY_TIME)) {
             BuyMenuOpenerI openerI = new BuyMenuOpenerI(gP.getMoney());
             e.getWhoClicked().getInventory().setItem(0, openerI.getItemStack());
         }
-    }
-
-    @EventHandler
-    public void onInventoryDrag(InventoryDragEvent e) {
-        e.setCancelled(true);
     }
 }

@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 import si.f5.stsaria.crafterStrikeMain.Game;
 import si.f5.stsaria.crafterStrikeMain.GamePlayer;
@@ -16,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class RadioChatGui extends BGui implements Listener {
+public class RadioChatG extends BGui implements Listener {
     String TITLE(){
         return "Radio chat";
     }

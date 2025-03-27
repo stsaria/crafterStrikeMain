@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import si.f5.stsaria.crafterStrikeMain.AdvEnchantment;
 import si.f5.stsaria.crafterStrikeMain.Game;
-import si.f5.stsaria.crafterStrikeMain.BuyGui;
+import si.f5.stsaria.crafterStrikeMain.guis.BuyG;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +51,6 @@ public class BuyMenuOpenerI extends BItem implements Listener {
         item.setItemMeta(itemMeta);
         if (!item.equals(this.itemStack)) return;
         e.setCancelled(true);
-        new BuyGui().open(e.getPlayer());
+        new BuyG().open(e.getPlayer());
     }
 }

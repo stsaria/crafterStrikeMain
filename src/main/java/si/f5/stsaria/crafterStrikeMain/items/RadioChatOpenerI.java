@@ -7,7 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import si.f5.stsaria.crafterStrikeMain.AdvEnchantment;
 import si.f5.stsaria.crafterStrikeMain.Game;
-import si.f5.stsaria.crafterStrikeMain.RadioChatGui;
+import si.f5.stsaria.crafterStrikeMain.guis.RadioChatG;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +38,6 @@ public class RadioChatOpenerI extends BItem implements Listener {
         if (e.getItem() == null) return;
         else if (!e.getItem().equals(this.itemStack)) return;
         e.setCancelled(true);
-        new RadioChatGui().open(e.getPlayer());
+        new RadioChatG().open(e.getPlayer());
     }
 }
