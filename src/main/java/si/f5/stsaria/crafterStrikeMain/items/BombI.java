@@ -7,10 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import si.f5.stsaria.crafterStrikeMain.AdvEnchantment;
-import si.f5.stsaria.crafterStrikeMain.Calculator;
-import si.f5.stsaria.crafterStrikeMain.Game;
-import si.f5.stsaria.crafterStrikeMain.GamePlayers;
+import si.f5.stsaria.crafterStrikeMain.*;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -40,9 +37,10 @@ public class BombI extends BItem implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
         e.setCancelled(true);
-        if (!e.getBlock().getDrops().contains(this.getItemStack())) return;
+        if (!e.getBlock().getType().equals(this.MATERIAL())) return;
         Location l = e.getBlock().getLocation();
-        if (!(Calculator.isIncludeRange(
+        System.out.println(l.getBlockX()+" "+l.getBlockY()+" "+l.getBlockZ());
+        if (Calculator.isIncludeRange(
             Game.configGetIntList("aBombPlantLocations").getFirst(),
             Game.configGetIntList("aBombPlantLocations").get(1),
             Game.configGetIntList("aBombPlantLocations").get(2),
@@ -52,7 +50,8 @@ public class BombI extends BItem implements Listener {
             l.getBlockX(),
             l.getBlockY(),
             l.getBlockZ()
-        ) || Calculator.isIncludeRange(
+        )) Game.bombPlantArea = BombArea.A;
+        else if (Calculator.isIncludeRange(
             Game.configGetIntList("bBombPlantLocations").getFirst(),
             Game.configGetIntList("bBombPlantLocations").get(1),
             Game.configGetIntList("bBombPlantLocations").get(2),
@@ -62,8 +61,9 @@ public class BombI extends BItem implements Listener {
             l.getBlockX(),
             l.getBlockY(),
             l.getBlockZ()
-        ))) return;
-        else if (Objects.requireNonNull(Bukkit.getWorld("world")).getBlockAt((int) l.getX(), (int) l.getY()-1, (int) l.getZ()).getType().equals(Material.AIR)) return;
+        )) Game.bombPlantArea = BombArea.B;
+        else return;
+        if (Objects.requireNonNull(Bukkit.getWorld(Game.configGetString("worldName"))).getBlockAt(l.getBlockX(), l.getBlockY()-1, l.getBlockZ()).getType().equals(Material.AIR)) return;
         Game.bombPlantPlayer = GamePlayers.get(e.getPlayer());
         Game.bombPlantCode = String.valueOf(new Random().nextLong(Long.parseLong("99999999999999"))+Long.parseLong("10000000000000"));
         Game.bombPlantLocation = e.getBlock().getLocation();

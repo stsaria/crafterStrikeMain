@@ -21,9 +21,8 @@ public class GamePlayers {
     }
     public static GamePlayer get(Player player){
         synchronized (GamePlayers.class){
-            // 拡張forだと複製して失敗するよ
-            for (int i = 0; i < players.size(); i++){
-                if (players.get(i).getPlayer().getName().equals(player.getName())) return players.get(i);
+            for (GamePlayer gamePlayer : players) {
+                if (gamePlayer.getPlayer().getName().equals(player.getName())) return gamePlayer;
             }
         }
         return null;

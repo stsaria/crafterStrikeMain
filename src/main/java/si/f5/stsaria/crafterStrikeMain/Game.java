@@ -3,7 +3,6 @@ package si.f5.stsaria.crafterStrikeMain;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -44,6 +43,12 @@ public class Game extends BukkitRunnable implements Listener {
     public static GamePlayer bombDefusePlayer = null;
     public static String bombDefuseCode = null;
 
+    private final ArrayList<BlockInfo> placeScheduleBlockInfos = new ArrayList<>();
+    private final Object placeScheduleBlockInfosLock = new Object();
+
+    private final ArrayList<Location> breakScheduleLocationInfos = new ArrayList<>();
+    private final Object breakScheduleLocationInfosLock = new Object();
+
     public Game(JavaPlugin plugin){
         this.plugin = plugin;
         config = plugin.getConfig();
@@ -78,9 +83,11 @@ public class Game extends BukkitRunnable implements Listener {
         config.addDefault("cantBuyMessage", "お金が足りません！");
         config.addDefault("startRoundMessage", "ラウンド開始！！");
         config.addDefault("attackBombPlantMessage", "爆弾を設置した。");
-        config.addDefault("attackBombedMessage", "C4が爆発した。");
         config.addDefault("defenceBombPlantMessage", ChatColor.RED+"爆弾が設置された！爆弾を解除しろ！");
-        config.addDefault("defenceBombedMessage", "C4が爆発した。");
+        config.addDefault("attackBombedMessage", "C4が爆発した。");
+        config.addDefault("defenceBombedMessage", "C4が爆発した！");
+        config.addDefault("attackBombDefuseMessage", "C4が解除された。");
+        config.addDefault("defenceBombDefuseMessage", "C4を解除した。");
         config.addDefault("winEndMessage", "作戦は成功だ。");
         config.addDefault("loseEndMessage", "作成は失敗だ。");
         config.addDefault("timeOverMessage", "作戦時間終了！");
@@ -94,6 +101,7 @@ public class Game extends BukkitRunnable implements Listener {
         config.addDefault("bossBarTextWaitingJoinPlayers", "ゲーム開始まで（プレイヤー参加の待機中）");
         config.addDefault("bossBarTextBuy", "購入タイム");
         config.addDefault("bossBarTextPlay", "プレイ中");
+        config.addDefault("bossBarTextBombPlay", "爆弾爆発まで！");
         config.addDefault("bossBarTextInPlayEnd", "ラウンド終了");
         config.addDefault("bossBarTextEnd", "試合終了");
         config.addDefault("wordPrice", "値段");
@@ -167,6 +175,22 @@ public class Game extends BukkitRunnable implements Listener {
         }
         this.updateScore();
 
+        synchronized (this.placeScheduleBlockInfosLock) {
+            for (int i = 0; i < this.placeScheduleBlockInfos.size(); i++){
+                BlockInfo bI = this.placeScheduleBlockInfos.get(i);
+                Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(config.getString("worldName"))))
+                .getBlockAt(bI.location()).setType(bI.material());
+                this.placeScheduleBlockInfos.remove(i);
+            }
+        }
+        synchronized (this.breakScheduleLocationInfosLock) {
+            for (int i = 0; i < this.breakScheduleLocationInfos.size(); i++){
+                Location l = this.breakScheduleLocationInfos.get(i);
+                Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(config.getString("worldName"))))
+                .getBlockAt(l).setType(Material.AIR);
+                this.breakScheduleLocationInfos.remove(i);
+            }
+        }
     }
     private void playEndSet(BTeam winTeam, BTeam loseTeam, Result result){
         this.winTeam = winTeam;
@@ -247,16 +271,14 @@ public class Game extends BukkitRunnable implements Listener {
             Players.sound(Sound.MUSIC_DISC_BLOCKS, 100F, 1F);
         }
         if (!this.timer.countDown()) {
-            Players.message(config.getString("startRoundMessage"));
             Players.sound(Sound.ITEM_GOAT_HORN_SOUND_0, 100F, 1F);
             step = Step.NORMAL_PLAY_TIME;
             this.timer.removeAll();
             this.timer = null;
         } else if (this.timer.getRestTick() % 20 == 0 && this.timer.getRestTick() < this.timer.getTick()/2) {
-            if (this.timer.getRestTick() == this.timer.getTick()/2-1){
-                Players.stopAllSounds();
-            }
             Players.sound(Sound.BLOCK_NOTE_BLOCK_BIT, 100F, 1F);
+        } else if (Objects.requireNonNull(this.timer).getRestTick() == this.timer.getTick()/2){
+            Players.stopAllSounds();
         }
     }
     private void play(){
@@ -272,7 +294,10 @@ public class Game extends BukkitRunnable implements Listener {
     }
     private void bombPlay(){
         if (this.timer == null){
-            this.timer = new Timer(config.getInt("bombPlaySecond"), config.getString("bossBarTextPlay"));
+            attackTeam.message(config.getString("attackBombPlantMessage"));
+            defenceTeam.message(config.getString("defenceBombPlantMessage"));
+
+            this.timer = new Timer(config.getInt("bombPlaySecond"), config.getString("bossBarTextBombPlay"));
             attackTeam.list().forEach(p -> {
                 if (GamePlayers.get(p) != null){
                     Objects.requireNonNull(GamePlayers.get(p)).addMoney(config.getInt("moneyPerPlant"));
@@ -284,8 +309,9 @@ public class Game extends BukkitRunnable implements Listener {
             this.playEndSet(attackTeam, defenceTeam, Result.BOMBED);
             GamePlayers.getAll().forEach(gP -> {
                 if (gP.getGameMode() != GameMode.SURVIVAL) return;
+
                 World world = Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(config.getString("worldName"))));
-                world.createExplosion(bombPlantLocation, 100F);
+                world.spawnParticle(Particle.EXPLOSION, bombPlantLocation, 0);
                 Location pL = gP.getLocation();
                 String path = (bombPlantArea.equals(BombArea.A) ? "a" : "b")+"BombPlantLocations";
                 if (Calculator.isIncludeRange(
@@ -311,13 +337,16 @@ public class Game extends BukkitRunnable implements Listener {
             String winMessage = "";
             String loseMessage = "";
 
-            if (result.equals(Result.BOMBED)){
+            if (this.result.equals(Result.BOMBED)){
                 winMessage += config.getString("attackBombedMessage");
                 loseMessage += config.getString("defenceBombedMessage");
-            } else if (result.equals(Result.ALL_KILL)){
+            } else if (this.result.equals(Result.ALL_KILL)){
                 winMessage += config.getString("winAllKillMessage");
                 loseMessage += config.getString("loseAllKillMessage");
-            } else if (result.equals(Result.TIME_OVER)){
+            } else if (this.result.equals(Result.DEFUSE_BOMB)){
+                winMessage += config.getString("defenceBombDefuseMessage");
+                loseMessage += config.getString("attackBombDefuseMessage");
+            } else if (this.result.equals(Result.TIME_OVER)){
                 winMessage += config.getString("timeOverMessage");
                 loseMessage += config.getString("timeOverMessage");
             }
@@ -410,15 +439,18 @@ public class Game extends BukkitRunnable implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e){
         if (step.equals(Step.NORMAL_PLAY_TIME) && e.getMessage().equals(bombPlantCode) && e.getPlayer().equals(bombPlantPlayer.getPlayer())){
-            Objects.requireNonNull(Bukkit.getWorld("world"))
-            .getBlockAt(bombPlantLocation).setType(new BombI().MATERIAL());
+            synchronized (this.placeScheduleBlockInfosLock) {
+                this.placeScheduleBlockInfos.add(new BlockInfo(bombPlantLocation, new BombI().MATERIAL()));
+            }
             step = Step.BOMB_PLAY_TIME;
+            try {this.timer.removeAll();} catch (Exception ignore) {}
             this.timer = null;
         }
         if (step.equals(Step.BOMB_PLAY_TIME) && e.getMessage().equals(bombDefuseCode) && e.getPlayer().equals(bombDefusePlayer.getPlayer()) && defenceTeam.contains(bombDefusePlayer.getPlayer())){
-            this.winTeam = defenceTeam;
-            step = Step.IN_PLAY_END;
-            this.timer = null;
+            synchronized (this.breakScheduleLocationInfosLock){
+                this.breakScheduleLocationInfos.add(bombPlantLocation);
+            }
+            this.playEndSet(defenceTeam, attackTeam, Result.DEFUSE_BOMB);
         }
     }
     @EventHandler
