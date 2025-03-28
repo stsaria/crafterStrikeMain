@@ -430,14 +430,14 @@ public class Game extends BukkitRunnable implements Listener {
             e.setCancelled(true);
             aGP.addKill();
             vGP.addDeath();
-        }
-        Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(
+            Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(
             (attackTeam.contains(aGP) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
-            aGP.getPlayer().getDisplayName() +
-            " kill -> " +
-            (attackTeam.contains(vGP) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
-            vGP.getPlayer().getDisplayName()
-        ));
+                aGP.getPlayer().getDisplayName() +
+                " kill -> " +
+                (attackTeam.contains(vGP) ? attackTeam.COLOR() : defenceTeam.COLOR()) +
+                vGP.getPlayer().getDisplayName()
+            ));
+        }
     }
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e){
